@@ -8,12 +8,13 @@ import (
 	"github.com/snksoft/crc"
 	"github.com/tarm/serial"
 )
+
 const read byte = 0x07
 const send byte = 0x08
 const save byte = 0x09
 
 type command struct {
-	Head   [2]byte
+	Head     [2]byte
 	Function byte
 	Length   byte
 	Address  [2]byte
@@ -45,8 +46,8 @@ type Config struct {
 
 // Scanner is the class
 type Scanner struct {
-	Config Config
-	port   *serial.Port
+	Config  Config
+	port    *serial.Port
 	command *command
 }
 
@@ -66,25 +67,24 @@ func (g *Scanner) crc() []byte {
 	var b []byte = []byte{0, 0}
 	binary.BigEndian.PutUint16(b, uint16(crcCode))
 	c.CRC = [2]byte{b[0], b[1]}
-	fmt.Printf("%x",c.getBytes())
 	return c.getBytes()
 }
 
 // add header bytes to command structure
 func (g *Scanner) head() {
-	var head [2]byte = [2]byte{0x7e,0x00}
-	(*g.command).Head=head
+	var head [2]byte = [2]byte{0x7e, 0x00}
+	(*g.command).Head = head
 }
 
 func (g *Scanner) write(c *command) error {
-	g.command=c
+	g.command = c
 	// add header bytes
 	g.head()
 	// default error message
 	var err = fmt.Errorf("open serial port first")
 	//check if comm port is opened
 	if g.port != nil {
-		// write to gm65 
+		// write to gm65
 		_, err = g.port.Write(g.crc())
 	}
 	return err
@@ -104,60 +104,107 @@ func (g *Scanner) read() ([]byte, error) {
 }
 
 // readZone reads the data in the given zone
-func (g *Scanner) readZone(zone [2]byte) (byte,error) {
-	err:=g.write(&command{
+func (g *Scanner) readZone(zone [2]byte) (byte, error) {
+	err := g.write(&command{
 		Function: read,
 		Length:   1,
 		Address:  zone,
 		Data:     1,
 		CRC:      [2]byte{},
 	})
-	buf,err:=g.read()
+	buf, err := g.read()
 	var data byte
-	if err==nil && buf!=nil && len(buf)==7 {
-		data=buf[4]
+	if err == nil && buf != nil && len(buf) == 7 {
+		data = buf[4]
 	}
-	return data,err
+	return data, err
 }
 
 // writeZoneBit writes single bits into given
 // zone via logical OR and leaves other bits intact
-func (g *Scanner) writeZoneBit(zone [2]byte, data byte) error {
-	err:=g.write(&command{
+func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
+	data, err := g.readZone(zone)
+	fmt.Printf("\nbefore: %08b\n",data)
+	data |= set
+	fmt.Printf("\nset:    %08b %08b\n",data,set)
+	data &= ^clear
+	fmt.Printf("\nclear:  %08b %08b\n",data,clear)
+	if err != nil {
+		return err
+	}
+	err = g.write(&command{
 		Function: send,
 		Length:   1,
 		Address:  zone,
 		Data:     data,
 		CRC:      [2]byte{},
 	})
-	buf,err:=g.read()
-	fmt.Printf("\n%x\n", buf)
-	if err!=nil{
+	buf, err := g.read()
+	if err != nil {
 		return err
-	} 
-	if buf==nil || len(buf)!=7 {
+	}
+	if buf == nil || len(buf) != 7 {
 		return fmt.Errorf("wrong data received")
 	}
 	return nil
 }
 
-// SetLED sets the light
-func (g *Scanner) SetLED(on bool) ([]byte, error) {
-	var err error
-	var comm command = command{
-		Function: 0x08,
-		Length:   0x01,
-		Address:  [2]byte{0x00, 0x0},
-		Data:     0x0,
+// SetLight sets the light
+func (g *Scanner) SetLight(on bool, std bool) error {
+	var set, clear, st byte = 0x08, 0x0c, 0x04
+	var zone [2]byte = [2]byte{0, 0}
+	if std {
+		clear = set
+		set = st
+	} else if on {
+		clear = 0
+		st = 0
+	} else {
+		set = 0
 	}
-	err = g.Open()
-	if err != nil {
-		return nil, err
-	}
-	err = g.write(&comm)
-	if err!=nil {
-		return nil,err
-	}
+	return g.writeZoneBit(zone, set, clear)
+}
 
-	return g.read()
+// SetReadInterval sets the light
+func (g *Scanner) SetReadInterval(interval byte) error {
+
+	var zone [2]byte = [2]byte{0, 0x04}
+	
+	return g.writeZoneBit(zone, interval, 0)
+}
+
+// SetSensorMode set scanner to sensor mode
+func (g *Scanner) SetSensorMode() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x03, 0x00)
+}
+
+// SetManualMode set scanner to manual mode
+func (g *Scanner) SetManualMode() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x00, 0x03)
+}
+
+// SetContinuousMode set scanner to continuous mode
+func (g *Scanner) SetContinuousMode() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x02, 0x01)
+}
+
+// SetCommandMode set scanner to command mode
+func (g *Scanner) SetCommandMode() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x01, 0x02)
+}
+
+// SetOpenLEDOnSuccess set scanner to
+// Open LED when successfully read
+func (g *Scanner) SetOpenLEDOnSuccess() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x80, 0x00)
+}
+
+// SetMute set scanner mute
+func (g *Scanner) SetMute(on bool) error {
+	var mute byte = 0x40
+	var clear byte = 0
+	if on {
+		clear = mute
+	}
+	return g.writeZoneBit([2]byte{0, 0}, mute, clear)
 }
