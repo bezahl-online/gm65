@@ -124,15 +124,19 @@ func (g *Scanner) readZone(zone [2]byte) (byte, error) {
 // zone via logical OR and leaves other bits intact
 func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
 	data, err := g.readZone(zone)
-	fmt.Printf("\nbefore: %08b\n",data)
+	//fmt.Printf("\nbefore: %08b\n", data)
 	data |= set
-	fmt.Printf("\nset:    %08b %08b\n",data,set)
+	//fmt.Printf("\nset:    %08b %08b\n", data, set)
 	data &= ^clear
-	fmt.Printf("\nclear:  %08b %08b\n",data,clear)
+	//fmt.Printf("\nclear:  %08b %08b\n", data, clear)
 	if err != nil {
 		return err
 	}
-	err = g.write(&command{
+	return g.writeZoneByte(zone, data)
+}
+
+func (g *Scanner) writeZoneByte(zone [2]byte, data byte) error {
+	err := g.write(&command{
 		Function: send,
 		Length:   1,
 		Address:  zone,
@@ -147,64 +151,4 @@ func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
 		return fmt.Errorf("wrong data received")
 	}
 	return nil
-}
-
-// SetLight sets the light
-func (g *Scanner) SetLight(on bool, std bool) error {
-	var set, clear, st byte = 0x08, 0x0c, 0x04
-	var zone [2]byte = [2]byte{0, 0}
-	if std {
-		clear = set
-		set = st
-	} else if on {
-		clear = 0
-		st = 0
-	} else {
-		set = 0
-	}
-	return g.writeZoneBit(zone, set, clear)
-}
-
-// SetReadInterval sets the light
-func (g *Scanner) SetReadInterval(interval byte) error {
-
-	var zone [2]byte = [2]byte{0, 0x04}
-	
-	return g.writeZoneBit(zone, interval, 0)
-}
-
-// SetSensorMode set scanner to sensor mode
-func (g *Scanner) SetSensorMode() error {
-	return g.writeZoneBit([2]byte{0, 0}, 0x03, 0x00)
-}
-
-// SetManualMode set scanner to manual mode
-func (g *Scanner) SetManualMode() error {
-	return g.writeZoneBit([2]byte{0, 0}, 0x00, 0x03)
-}
-
-// SetContinuousMode set scanner to continuous mode
-func (g *Scanner) SetContinuousMode() error {
-	return g.writeZoneBit([2]byte{0, 0}, 0x02, 0x01)
-}
-
-// SetCommandMode set scanner to command mode
-func (g *Scanner) SetCommandMode() error {
-	return g.writeZoneBit([2]byte{0, 0}, 0x01, 0x02)
-}
-
-// SetOpenLEDOnSuccess set scanner to
-// Open LED when successfully read
-func (g *Scanner) SetOpenLEDOnSuccess() error {
-	return g.writeZoneBit([2]byte{0, 0}, 0x80, 0x00)
-}
-
-// SetMute set scanner mute
-func (g *Scanner) SetMute(on bool) error {
-	var mute byte = 0x40
-	var clear byte = 0
-	if on {
-		clear = mute
-	}
-	return g.writeZoneBit([2]byte{0, 0}, mute, clear)
 }
