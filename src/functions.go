@@ -5,20 +5,34 @@ import (
 	"fmt"
 )
 
-// Light sets the light
-func (g *Scanner) Light(on bool, std bool) error {
-	var set, clear, st byte = 0x08, 0x0c, 0x04
-	var zone [2]byte = [2]byte{0, 0}
-	if std {
-		clear = set
-		set = st
-	} else if on {
-		clear = 0
-		st = 0
-	} else {
-		set = 0
-	}
-	return g.writeZoneBit(zone, set, clear)
+// LightOn sets the aim (red light) to ON
+func (g *Scanner) LightOn() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x08, 0x04)
+}
+
+// LightOff sets the aim (red light) to Off 
+func (g *Scanner) LightOff() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x00, 0x0c)
+}
+
+// LightStd sets the aim (red light) to Std 
+func (g *Scanner) LightStd() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x04, 0x08)
+}
+
+// AimOn sets the aim (red light) to ON 
+func (g *Scanner) AimOn() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x20, 0x10)
+}
+
+// AimOff sets the aim (red light) to OFF 
+func (g *Scanner) AimOff() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x00, 0x30)
+}
+
+// AimStd sets the aim (red light) to STD 
+func (g *Scanner) AimStd() error {
+	return g.writeZoneBit([2]byte{0, 0}, 0x10, 0x20)
 }
 
 // ProductModel return product model id
