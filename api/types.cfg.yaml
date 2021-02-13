@@ -1,0 +1,5 @@
+output:
+  gm65-types.gen.go
+generate:
+  - types
+package: api

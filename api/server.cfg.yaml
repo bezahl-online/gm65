@@ -1,0 +1,6 @@
+output:
+  gm65-server.gen.go
+generate:
+  - server
+  - spec
+package: api

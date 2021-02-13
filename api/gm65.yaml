@@ -1,0 +1,318 @@
+openapi: '3.0.1'
+info:
+  version: '0.1.0'
+  title: GM65
+  description: Barcode/QR-Code Scanner GM65 API
+
+servers:
+  - url: http://mango:8070
+
+security:
+  - BasicAuth: []
+
+paths:
+  /test:
+    get:
+      description: Returns OK
+      responses:
+        '200':
+          $ref: '#/components/responses/statusresponse'
+                                
+  /info:
+    get:
+      description: Return hard and software versions of the scanner
+      responses:
+        '200':
+          description: Successfully returned info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scanner_info'
+
+
+
+        '400':
+          $ref: '#/components/responses/statusresponse'
+                                          
+  # /read:
+  #   get:
+  #     description: Returns a read code after on has been scanned
+  #     responses:
+  #       '200':
+  #         description: Successfully returned read code
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: string
+  #               example: "978020137962"
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+          
+  # /disable_code:
+  #   post:
+  #     operationId: disableCode
+  #     requestBody:
+  #       description: disable given code type
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               code_type:
+  #                 $ref: '#/components/schemas/code_type'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+  # /enable_code:
+  #   post:
+  #     operationId: enableCode
+  #     requestBody:
+  #       description: enable given code type
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               code_type:
+  #                 $ref: '#/components/schemas/code_type'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+  # /light:
+  #   post:
+  #     operationId: light
+  #     requestBody:
+  #       description: set light of scanner
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               set:
+  #                 $ref: '#/components/schemas/switch_opt'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+  # /aim:
+  #   post:
+  #     operationId: aim
+  #     requestBody:
+  #       description: set (red light) aim of scanner
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               set:
+  #                 $ref: '#/components/schemas/switch_opt'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+  # /scanner_mode:
+  #   post:
+  #     operationId: scannerMode
+  #     requestBody:
+  #       description: set working mode of scanner
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               mode:
+  #                 $ref: '#/components/schemas/mode_opt'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+  # /sound_duration:
+  #   post:
+  #     operationId: soundDuration
+  #     requestBody:
+  #       description: set duration of scanner sound
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               duration:
+  #                 description: duration in milliseconds
+  #                 type: integer
+  #                 format: int32
+  #                 minimum: 1
+  #                 maximum: 255
+  #                 example: 200
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+  # /sound_frequency:
+  #   post:
+  #     operationId: soundFrequency
+  #     requestBody:
+  #       description: set frequency of scanner sound
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               frequency:
+  #                 description: frequency in Hz
+  #                 type: integer
+  #                 format: int32
+  #                 minimum: 20
+  #                 maximum: 5100
+  #                 example: 1000
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+
+  # /read_interval:
+  #   post:
+  #     operationId: readInterval
+  #     requestBody:
+  #       description: set reading interval time of the scanner
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               interval:
+  #                 description: >- 
+  #                   interval time in 0.1 seconds steps (0.0 sec - 25.5 sec)
+  #                 type: integer
+  #                 format: int32
+  #                 minimum: 1
+  #                 maximum: 255
+  #                 example: 5
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+
+  # /read_timeout:
+  #   post:
+  #     operationId: readTimeout
+  #     requestBody:
+  #       description: set reading timeout before interval break
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               interval:
+  #                 description: >- 
+  #                   timeout in 0.1 seconds steps (0.0 sec - 25.5 sec)
+  #                 type: integer
+  #                 format: int32
+  #                 minimum: 1
+  #                 maximum: 255
+  #                 example: 5
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/statusresponse'
+  #       '400':
+  #         $ref: '#/components/responses/statusresponse'
+
+
+
+components:
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      
+  responses:
+    statusresponse:
+      description: status message with status code and message 
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/status'
+  schemas:
+
+    scanner_info:
+      type: object
+      properties:
+        model:
+          description: product model
+          type: string
+          example: "GM65"
+        hardware_version:
+          description: hardware version
+          type: string
+          example: "1.00"
+        software_version:
+          description: software version
+          type: string
+          example: "1.01"
+        software_date:
+          description: software date
+          type: string
+          example: "20200301"
+
+    code_type:
+      description: enum with available code types
+      example: ean13
+      type: string
+      enum:
+        - ean13
+        - ean8
+        - qr
+        - all
+          
+    switch_opt:
+      description: enum with light options
+      example: enable
+      type: string
+      enum:
+        - enable
+        - disable
+        - std
+            
+    mode_opt:
+      description: enum with scanner modes
+      example: manual
+      type: string
+      enum:
+        - manual
+        - single
+        - sensor
+        - continuous
+  
+    status:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Status code
+        message:
+          type: string
+          description: Status message
+
+
