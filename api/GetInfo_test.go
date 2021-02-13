@@ -14,7 +14,7 @@ func TestGetInfo(t *testing.T) {
 		var scannerInfo *ScannerInfo = &ScannerInfo{}
 		err := result.UnmarshalBodyToObject(&scannerInfo)
 		if assert.NoError(t, err) {
-			assert.True(t,len(*scannerInfo.HardwareVersion)>1)
+			assert.True(t, len(*scannerInfo.HardwareVersion) > 1)
 		}
 	}
 }

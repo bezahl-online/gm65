@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// GetInfo returns all data available about the scanner
 func (a *API) GetInfo(ctx echo.Context) error {
 	model, err := scanner.ProductModel()
 	softwareVersion, err := scanner.SoftwareVersion()

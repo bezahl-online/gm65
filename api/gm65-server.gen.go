@@ -20,6 +20,12 @@ type ServerInterface interface {
 	// (GET /info)
 	GetInfo(ctx echo.Context) error
 
+	// (POST /light)
+	Light(ctx echo.Context) error
+
+	// (GET /read)
+	ReadPayload(ctx echo.Context) error
+
 	// (GET /test)
 	GetTest(ctx echo.Context) error
 }
@@ -33,10 +39,32 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) GetInfo(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BasicAuthScopes, []string{""})
+	ctx.Set("BasicAuth.Scopes", []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetInfo(ctx)
+	return err
+}
+
+// Light converts echo context to params.
+func (w *ServerInterfaceWrapper) Light(ctx echo.Context) error {
+	var err error
+
+	ctx.Set("BasicAuth.Scopes", []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.Light(ctx)
+	return err
+}
+
+// ReadPayload converts echo context to params.
+func (w *ServerInterfaceWrapper) ReadPayload(ctx echo.Context) error {
+	var err error
+
+	ctx.Set("BasicAuth.Scopes", []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.ReadPayload(ctx)
 	return err
 }
 
@@ -44,7 +72,7 @@ func (w *ServerInterfaceWrapper) GetInfo(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetTest(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BasicAuthScopes, []string{""})
+	ctx.Set("BasicAuth.Scopes", []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetTest(ctx)
@@ -80,6 +108,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/info", wrapper.GetInfo)
+	router.POST(baseURL+"/light", wrapper.Light)
+	router.GET(baseURL+"/read", wrapper.ReadPayload)
 	router.GET(baseURL+"/test", wrapper.GetTest)
 
 }
@@ -87,16 +117,19 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6xUTW/UMBD9K9bAMWzcLV/KreWAKoSALrfVqnKdycZVYht7QllV+e/IdrIfTRaExC2Z",
-	"sd97M/M8TyBNa41GTR6KJ3DordEe448nQZ0fQyEijSbUFD6FtY2SgpTR+YM3Ol6QNbYifL10WEEBL/ID",
-	"fJ6yPk+w0Pd9BiV66ZQNKFAMhKxF78UW2aOimg0xaUpkQpdjEsLtATFRC63R3SldmfBvnbHoSKVKauHK",
-	"R+Hw7ic6r5LYU+rxBBtPZIC/RGsbhAIuFpxDBrSzGFU6pbfQZ9CaEpsplnWm7CSxlD4G+vj57Zs5IG8q",
-	"ivpKQTgFHNMspo8Bl3zJ+SW/+CPo2aL3uGeKnoHt9xFz/4CSIlEa6KTrYWZT0tVhoJBBZVwrCApQmi6X",
-	"Bz6lCbfoYpeHiZ9DGvNzWh3+6JTDEoo1DIzj8c2kklAKys4p2q2Cs1IV18IredVRvXd4uHMfogfKmsgm",
-	"R48GPJV6LVygz7/dvvoQnLxKdmXBEOzq601AUnTskf3QgC8uFjw0wljUwioo4HLBF2E4VlAdReYj7RZp",
-	"yn6L1DnNgsfjG3o+d89MxahGNrwiiFwuPu6bMmhCugkE2emCWHL+/7bC8QOe2Q2rTkr0vuqaZsdcLAhL",
-	"lk5n8DopmSPYK86f7bM+suSEnv7SOc++fJrryfdwdb4n/6zkyHxQrE9st970m5B1YVwx2blmMF2R563Q",
-	"W1O85+849Jv+dwAAAP//d8CaZtIFAAA=",
+	"H4sIAAAAAAAC/7RVTW/bOBD9KwR3j16Ltrf50C3poQjaomncW2AEtDiyGEgkS46aGoH+e0FSsq1IMRIk",
+	"PVnmkG/ePL4ZPtJMV0YrUOho+kgtOKOVg/DHIcfadUt+JdMKQaH/5MaUMuMotUrunVbhQFZAxf3XvxZy",
+	"mtJ/kj18EqMuibC0aZoJFeAyK41HoWmbkFTgHN8AeZBYkHYt0wIIV6ILUn+6RYzEufC/xmoDFmWswPBt",
+	"qWOgnwkLIG2QYMGR+AWXcaXAkoA1ofCbV6YEmtLz0zM2Z7PF6fnJnE4obg0EtlaqTSDSruj1PWRIA7MA",
+	"dSdVroe0Cm7FA7dw9wusk1G7Pr9uB+l2HNKZTRkb0pjQSgsoh1jGalFnSGL4EOjT15MPY0BO5xj4CY4w",
+	"BOzCJIQPAedsztiCzY6CPlv0DveZomcv1D76a6C6t9Aw6XLvLzqhubYVR5pSqXBxcNdSIWzABpVbAz6H",
+	"1MXHuFr4WUsLgqa3tM3YbV+NVfIgMSvutMFhNlB1FTuklJsCiQ4B5zVTdeUTgOLr0qcQ0rVfDoVPtFd1",
+	"t2fI1UFWW4nbpW+yqOAldzK7qLHYNbs/s/are4gC0cTm7szfJ37JrS89+X7z30ff1Mu267wZycX1lUeS",
+	"eOjPnWEom86mzCujDShuJE3pYsqm3hiGYxFIJl3aDYzIdgNYW0V8f4Vx8tRzjuj8cBjQkMuGOXclPCfA",
+	"K59g0p+Vc8beb0AeDo+RMbmsswycy+uy3BIbCgJB4u4J/T8yGUuwY5w8Ge1NyJIEJ4XG0S789kv/EsLR",
+	"xeDwUovtq2rut6OL13NUiL3/Rzp95P0A7Loh311gM35Tr9PnTbJ2b9MRQzrCw7PTvnM5giXa29SRNYBq",
+	"ixEDN94AF9ftI/cXHRkqeLETd4W8UTeE6MKjun37PNaiP/zR97j4SKWbhTS97U3B21Wz8lHrp0cI1rZs",
+	"Z2CaJBVXG52esVNGm1XzJwAA//9TM/iMbAkAAA==",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

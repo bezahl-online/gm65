@@ -99,7 +99,7 @@ func (g *Scanner) readWithTimeout(timeout time.Duration) ([]byte, error) {
 }
 
 // listen to gm65 on comm port
-func (g *Scanner) read() ([]byte, error) {
+func (g *Scanner) Read() ([]byte, error) {
 	return g.readWithTimeout(0)
 }
 
@@ -112,7 +112,7 @@ func (g *Scanner) readZone(zone [2]byte) (byte, error) {
 		Data:     1,
 		CRC:      [2]byte{},
 	})
-	buf, err := g.read()
+	buf, err := g.Read()
 	var data byte
 	if err == nil && buf != nil && len(buf) == 7 {
 		data = buf[4]
@@ -143,7 +143,7 @@ func (g *Scanner) writeZoneByte(zone [2]byte, data byte) error {
 		Data:     data,
 		CRC:      [2]byte{},
 	})
-	buf, err := g.read()
+	buf, err := g.Read()
 	if err != nil {
 		return err
 	}

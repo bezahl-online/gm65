@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	swagger, err :=api.GetSwagger()
+	swagger, err := api.GetSwagger()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
 		os.Exit(1)

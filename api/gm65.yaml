@@ -34,19 +34,20 @@ paths:
         '400':
           $ref: '#/components/responses/statusresponse'
                                           
-  # /read:
-  #   get:
-  #     description: Returns a read code after on has been scanned
-  #     responses:
-  #       '200':
-  #         description: Successfully returned read code
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: string
-  #               example: "978020137962"
-  #       '400':
-  #         $ref: '#/components/responses/statusresponse'
+  /read:
+    get:
+      operationId: readPayload
+      description: Returns a read code after on has been scanned
+      responses:
+        '200':
+          description: Successfully returned read code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/read'
+
+        '400':
+          $ref: '#/components/responses/statusresponse'
           
   # /disable_code:
   #   post:
@@ -84,23 +85,23 @@ paths:
   #       '400':
   #         $ref: '#/components/responses/statusresponse'
 
-  # /light:
-  #   post:
-  #     operationId: light
-  #     requestBody:
-  #       description: set light of scanner
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               set:
-  #                 $ref: '#/components/schemas/switch_opt'
-  #     responses:
-  #       '200':
-  #         $ref: '#/components/responses/statusresponse'
-  #       '400':
-  #         $ref: '#/components/responses/statusresponse'
+  /light:
+    post:
+      operationId: light
+      requestBody:
+        description: set light of scanner
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                set:
+                  $ref: '#/components/schemas/switch_opt'
+      responses:
+        '200':
+          $ref: '#/components/responses/statusresponse'
+        '400':
+          $ref: '#/components/responses/statusresponse'
 
   # /aim:
   #   post:
@@ -271,6 +272,14 @@ components:
           description: software date
           type: string
           example: "20200301"
+
+    read:
+      type: object
+      properties:
+        payload:
+          description: the payload that the scanner read
+          type: string
+          example: "978020137962"
 
     code_type:
       description: enum with available code types

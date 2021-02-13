@@ -12,6 +12,7 @@ import (
 //go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen --config=types.cfg.yaml gm65.yaml
 //go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen --config=server.cfg.yaml gm65.yaml
 
+// API is the api interface type
 type API struct{}
 
 var e *echo.Echo = echo.New()
