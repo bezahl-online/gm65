@@ -17,6 +17,12 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (POST /disable_code)
+	DisableCode(ctx echo.Context) error
+
+	// (POST /enable_code)
+	EnableCode(ctx echo.Context) error
+
 	// (GET /info)
 	GetInfo(ctx echo.Context) error
 
@@ -35,11 +41,33 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
+// DisableCode converts echo context to params.
+func (w *ServerInterfaceWrapper) DisableCode(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BasicAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.DisableCode(ctx)
+	return err
+}
+
+// EnableCode converts echo context to params.
+func (w *ServerInterfaceWrapper) EnableCode(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BasicAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.EnableCode(ctx)
+	return err
+}
+
 // GetInfo converts echo context to params.
 func (w *ServerInterfaceWrapper) GetInfo(ctx echo.Context) error {
 	var err error
 
-	ctx.Set("BasicAuth.Scopes", []string{""})
+	ctx.Set(BasicAuthScopes, []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetInfo(ctx)
@@ -50,7 +78,7 @@ func (w *ServerInterfaceWrapper) GetInfo(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) Light(ctx echo.Context) error {
 	var err error
 
-	ctx.Set("BasicAuth.Scopes", []string{""})
+	ctx.Set(BasicAuthScopes, []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.Light(ctx)
@@ -61,7 +89,7 @@ func (w *ServerInterfaceWrapper) Light(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) ReadPayload(ctx echo.Context) error {
 	var err error
 
-	ctx.Set("BasicAuth.Scopes", []string{""})
+	ctx.Set(BasicAuthScopes, []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.ReadPayload(ctx)
@@ -72,7 +100,7 @@ func (w *ServerInterfaceWrapper) ReadPayload(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetTest(ctx echo.Context) error {
 	var err error
 
-	ctx.Set("BasicAuth.Scopes", []string{""})
+	ctx.Set(BasicAuthScopes, []string{""})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetTest(ctx)
@@ -107,6 +135,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/disable_code", wrapper.DisableCode)
+	router.POST(baseURL+"/enable_code", wrapper.EnableCode)
 	router.GET(baseURL+"/info", wrapper.GetInfo)
 	router.POST(baseURL+"/light", wrapper.Light)
 	router.GET(baseURL+"/read", wrapper.ReadPayload)
@@ -117,19 +147,21 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7RVTW/bOBD9KwR3j16Ltrf50C3poQjaomncW2AEtDiyGEgkS46aGoH+e0FSsq1IMRIk",
-	"PVnmkG/ePL4ZPtJMV0YrUOho+kgtOKOVg/DHIcfadUt+JdMKQaH/5MaUMuMotUrunVbhQFZAxf3XvxZy",
-	"mtJ/kj18EqMuibC0aZoJFeAyK41HoWmbkFTgHN8AeZBYkHYt0wIIV6ILUn+6RYzEufC/xmoDFmWswPBt",
-	"qWOgnwkLIG2QYMGR+AWXcaXAkoA1ofCbV6YEmtLz0zM2Z7PF6fnJnE4obg0EtlaqTSDSruj1PWRIA7MA",
-	"dSdVroe0Cm7FA7dw9wusk1G7Pr9uB+l2HNKZTRkb0pjQSgsoh1jGalFnSGL4EOjT15MPY0BO5xj4CY4w",
-	"BOzCJIQPAedsztiCzY6CPlv0DveZomcv1D76a6C6t9Aw6XLvLzqhubYVR5pSqXBxcNdSIWzABpVbAz6H",
-	"1MXHuFr4WUsLgqa3tM3YbV+NVfIgMSvutMFhNlB1FTuklJsCiQ4B5zVTdeUTgOLr0qcQ0rVfDoVPtFd1",
-	"t2fI1UFWW4nbpW+yqOAldzK7qLHYNbs/s/are4gC0cTm7szfJ37JrS89+X7z30ff1Mu267wZycX1lUeS",
-	"eOjPnWEom86mzCujDShuJE3pYsqm3hiGYxFIJl3aDYzIdgNYW0V8f4Vx8tRzjuj8cBjQkMuGOXclPCfA",
-	"K59g0p+Vc8beb0AeDo+RMbmsswycy+uy3BIbCgJB4u4J/T8yGUuwY5w8Ge1NyJIEJ4XG0S789kv/EsLR",
-	"xeDwUovtq2rut6OL13NUiL3/Rzp95P0A7Loh311gM35Tr9PnTbJ2b9MRQzrCw7PTvnM5giXa29SRNYBq",
-	"ixEDN94AF9ftI/cXHRkqeLETd4W8UTeE6MKjun37PNaiP/zR97j4SKWbhTS97U3B21Wz8lHrp0cI1rZs",
-	"Z2CaJBVXG52esVNGm1XzJwAA//9TM/iMbAkAAA==",
+	"H4sIAAAAAAAC/9RWX3PjNBD/KpqFRxM7CVx7frsezE0HGI6Wt04mo1qbWDeOpJPWLZkbf3dGku04tRMK",
+	"LQO82drVb//9dldfoNA7oxUqcpB/AYvOaOUw/DjiVLvuyJ8UWhEq8p/cmEoWnKRW6SenVbhQlLjj/utr",
+	"ixvI4av0AJ9GqUsjLDRNk4BAV1hpPArkrUG2Q+f4FtmjpJK1Z4UWyLgSnRD87RYxeiZwTXsT3DxGRVXv",
+	"IhZ/4LLi9xVGOK/uIAkKkN8BcjVf+n+uLiGBzxYS4FUFqwTwd74zFXq0VinaAkdWqi00CVjkwhs3Vhu0",
+	"JGMODd9XOgqOvaISWStkVHJi/sAVXCm0LGANrb69uMwW2Xx58fbNYmy86U/0/ScsCEJuAtRaqo0eu1Vy",
+	"Kx65xfUDWidj9Y796zRYpzF0Zz7Lsqkc7LTAaoxlrBZ1QSyKh0Affn7z3RSQ0xsK/glOEyXtxCyIh4CL",
+	"bJFly2x+FvRk0D3uiaDnz8x9ZPgo6551Y6O3B4ZDAhttd5wgB6loOai1VIRbtCHLbQucQurkU75a/FxL",
+	"i8LzvbXYqa+mInmUVJRrbehcX1VyWxLTQXDUUMo3GyQgpGu/HIkn/dTpjH11WNRW0v7Wt3nM4BV3snhX",
+	"U9mPG3/n3p8eIEoiE8dLR/5jx6+49aGnv958897Pgdu26zwZ2buP1x5J0pCfPWEgm81nmc+MNqi4kZDD",
+	"cpbNPDEMpzI4mbbhrrt6G+1C/jwXwsS8FpDD91HrfayCLww6utJi/5cm7Zhh/Rg8N4QPihMMHk/mNiK2",
+	"lQ+oDtMzzr3Bylhk2SnLvV76ZK80CXz7d64FN9PInz9J9Q/qf5PpGM9/MNFdL21xYhbcINVWMb80wpZ+",
+	"Okgd05vhhoPkSYU+IF17A9Nhvs67Y7gRJzJ/WxcFOrepq2rPbAgIBYvaL8pcGI+nyflTEL8WL10sz9lE",
+	"HIb6syjpkLoRv+kL+O8TsntwnSGkYzy8pdrn44bQMu1p6tg9omqDESM23iAXH9uX2z/IyBDBs5nYB/LC",
+	"vBFGFp7N2y8/TrXob/7qaxQ+utIteMjvjlb73apZean10yMIa1u1iz1P0x1XW51fZhcZNKvmjwAAAP//",
+	"+4Mij8MMAAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

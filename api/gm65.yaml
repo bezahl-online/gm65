@@ -49,41 +49,41 @@ paths:
         '400':
           $ref: '#/components/responses/statusresponse'
           
-  # /disable_code:
-  #   post:
-  #     operationId: disableCode
-  #     requestBody:
-  #       description: disable given code type
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               code_type:
-  #                 $ref: '#/components/schemas/code_type'
-  #     responses:
-  #       '200':
-  #         $ref: '#/components/responses/statusresponse'
-  #       '400':
-  #         $ref: '#/components/responses/statusresponse'
+  /disable_code:
+    post:
+      operationId: disableCode
+      requestBody:
+        description: disable given code type
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code_type:
+                  $ref: '#/components/schemas/code_type'
+      responses:
+        '200':
+          $ref: '#/components/responses/statusresponse'
+        '400':
+          $ref: '#/components/responses/statusresponse'
 
-  # /enable_code:
-  #   post:
-  #     operationId: enableCode
-  #     requestBody:
-  #       description: enable given code type
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               code_type:
-  #                 $ref: '#/components/schemas/code_type'
-  #     responses:
-  #       '200':
-  #         $ref: '#/components/responses/statusresponse'
-  #       '400':
-  #         $ref: '#/components/responses/statusresponse'
+  /enable_code:
+    post:
+      operationId: enableCode
+      requestBody:
+        description: enable given code type
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code_type:
+                  $ref: '#/components/schemas/code_type'
+      responses:
+        '200':
+          $ref: '#/components/responses/statusresponse'
+        '400':
+          $ref: '#/components/responses/statusresponse'
 
   /light:
     post:

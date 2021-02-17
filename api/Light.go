@@ -15,7 +15,6 @@ func (a *API) Light(ctx echo.Context) error {
 	if err != nil {
 		return SendError(ctx, http.StatusBadRequest, err.Error())
 	}
-
 	switch *request.Set {
 	case SwitchOpt_enable:
 		err = scanner.LightOn()
@@ -31,7 +30,9 @@ func (a *API) Light(ctx echo.Context) error {
 		if err != nil {
 			return SendError(ctx, http.StatusBadRequest, err.Error())
 		}
-
 	}
-	return err
+	if err!=nil {
+		return SendError(ctx, http.StatusGone, err.Error())
+	}
+	return nil
 }

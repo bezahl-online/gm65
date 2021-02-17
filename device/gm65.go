@@ -3,6 +3,7 @@ package device
 import (
 	"encoding/binary"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/snksoft/crc"
@@ -46,6 +47,7 @@ type Config struct {
 
 // Scanner is the class
 type Scanner struct {
+	lock 	sync.RWMutex
 	Config  Config
 	port    *serial.Port
 	command *command
@@ -77,6 +79,9 @@ func (g *Scanner) head() {
 }
 
 func (g *Scanner) write(c *command) error {
+	if g.port==nil {
+		return errNotConnected
+	}
 	g.command = c
 	// add header bytes
 	g.head()
@@ -84,17 +89,34 @@ func (g *Scanner) write(c *command) error {
 	var err = fmt.Errorf("open serial port first")
 	//check if comm port is opened
 	if g.port != nil {
-		// write to gm65
+		// write to gm65	
 		_, err = g.port.Write(g.crc())
+		err = reconnectIfLost(err, g)
 	}
 	return err
 }
 
+func reconnectIfLost(err error, g *Scanner) error {
+	if err != nil {
+		go Connect(g)
+		if err.Error() == "EOF" {
+			err = fmt.Errorf("lost connection to scanner device")
+		}
+	}
+	return err
+}
+
+var errNotConnected error = fmt.Errorf("scanner device not connected")
 // listen to gm65 on comm port with timeout
 func (g *Scanner) readWithTimeout(timeout time.Duration) ([]byte, error) {
+	if g.port==nil {
+		return nil,errNotConnected
+	}
 	// FIXME: set timeout
 	buf := make([]byte, 128)
+	var err error
 	n, err := g.port.Read(buf)
+	err = reconnectIfLost(err, g)
 	return buf[:n], err
 }
 
@@ -124,18 +146,20 @@ func (g *Scanner) readZone(zone [2]byte) (byte, error) {
 // zone via logical OR and leaves other bits intact
 func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
 	data, err := g.readZone(zone)
+	if err != nil {
+		return err
+	}
 	//fmt.Printf("\nbefore: %08b\n", data)
 	data |= set
 	//fmt.Printf("\nset:    %08b %08b\n", data, set)
 	data &= ^clear
 	//fmt.Printf("\nclear:  %08b %08b\n", data, clear)
-	if err != nil {
-		return err
-	}
 	return g.writeZoneByte(zone, data)
 }
 
 func (g *Scanner) writeZoneByte(zone [2]byte, data byte) error {
+	defer g.lock.Unlock()
+	g.lock.Lock()
 	err := g.write(&command{
 		Function: send,
 		Length:   1,

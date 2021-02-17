@@ -1,6 +1,7 @@
 package device
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 var scanner Scanner
 
 func init() {
+	fmt.Println("test init")
 	scanner = Scanner{
 		Config: Config{
 			SerialPort: "/dev/ttyACM0",

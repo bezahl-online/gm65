@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"bezahl.online/gm65/device"
@@ -19,22 +18,12 @@ var e *echo.Echo = echo.New()
 var scanner device.Scanner
 
 func init() {
+	fmt.Println("init")
 	testServer := &API{}
-
-	scanner = device.Scanner{
-		Config: device.Config{
-			SerialPort: "/dev/ttyACM0",
-			Baud:       9600,
-		},
-	}
-
-	err := scanner.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	RegisterHandlers(e, testServer)
+	go device.Connect(&scanner)
 }
+
 
 // GetTest returns status ok
 func (a *API) GetTest(ctx echo.Context) error {

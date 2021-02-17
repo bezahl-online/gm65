@@ -14,5 +14,5 @@ func TestReadPayload(t *testing.T) {
 	// 		fmt.Printf("got: '%s'\n",*read.Payload)
 	// 	}
 	// }
-	// FIXME: need mock 
+	// FIXME: need mock
 }
