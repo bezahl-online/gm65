@@ -47,7 +47,7 @@ type Config struct {
 
 // Scanner is the class
 type Scanner struct {
-	lock 	sync.RWMutex
+	lock    sync.RWMutex
 	Config  Config
 	port    *serial.Port
 	command *command
@@ -79,7 +79,7 @@ func (g *Scanner) head() {
 }
 
 func (g *Scanner) write(c *command) error {
-	if g.port==nil {
+	if g.port == nil {
 		return errNotConnected
 	}
 	g.command = c
@@ -89,7 +89,7 @@ func (g *Scanner) write(c *command) error {
 	var err = fmt.Errorf("open serial port first")
 	//check if comm port is opened
 	if g.port != nil {
-		// write to gm65	
+		// write to gm65
 		_, err = g.port.Write(g.crc())
 		err = reconnectIfLost(err, g)
 	}
@@ -107,10 +107,11 @@ func reconnectIfLost(err error, g *Scanner) error {
 }
 
 var errNotConnected error = fmt.Errorf("scanner device not connected")
+
 // listen to gm65 on comm port with timeout
-func (g *Scanner) readWithTimeout(timeout time.Duration) ([]byte, error) {
-	if g.port==nil {
-		return nil,errNotConnected
+func (g *Scanner) _readWithTimeout(timeout time.Duration) ([]byte, error) {
+	if g.port == nil {
+		return nil, errNotConnected
 	}
 	// FIXME: set timeout
 	buf := make([]byte, 128)
@@ -122,11 +123,23 @@ func (g *Scanner) readWithTimeout(timeout time.Duration) ([]byte, error) {
 
 // listen to gm65 on comm port
 func (g *Scanner) Read() ([]byte, error) {
-	return g.readWithTimeout(0)
+	defer g.lock.Unlock()
+	g.lock.Lock()
+	return g._read()
 }
 
-// readZone reads the data in the given zone
+func (g *Scanner) _read() ([]byte, error) {
+	return g._readWithTimeout(0)
+}
+
 func (g *Scanner) readZone(zone [2]byte) (byte, error) {
+	defer g.lock.Unlock()
+	g.lock.Lock()
+	return g._readZone(zone)
+}
+
+// _readZone reads the data in the given zone
+func (g *Scanner) _readZone(zone [2]byte) (byte, error) {
 	err := g.write(&command{
 		Function: read,
 		Length:   1,
@@ -134,7 +147,7 @@ func (g *Scanner) readZone(zone [2]byte) (byte, error) {
 		Data:     1,
 		CRC:      [2]byte{},
 	})
-	buf, err := g.Read()
+	buf, err := g._read()
 	var data byte
 	if err == nil && buf != nil && len(buf) == 7 {
 		data = buf[4]
@@ -145,7 +158,13 @@ func (g *Scanner) readZone(zone [2]byte) (byte, error) {
 // writeZoneBit writes single bits into given
 // zone via logical OR and leaves other bits intact
 func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
-	data, err := g.readZone(zone)
+	defer g.lock.Unlock()
+	g.lock.Lock()
+	return g._writeZoneBit(zone, set, clear)
+}
+
+func (g *Scanner) _writeZoneBit(zone [2]byte, set byte, clear byte) error {
+	data, err := g._readZone(zone)
 	if err != nil {
 		return err
 	}
@@ -154,12 +173,17 @@ func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
 	//fmt.Printf("\nset:    %08b %08b\n", data, set)
 	data &= ^clear
 	//fmt.Printf("\nclear:  %08b %08b\n", data, clear)
-	return g.writeZoneByte(zone, data)
+	return g._writeZoneByte(zone, data)
 }
 
+// writeZoneByte writes a byte to the zone
 func (g *Scanner) writeZoneByte(zone [2]byte, data byte) error {
 	defer g.lock.Unlock()
 	g.lock.Lock()
+	return g._writeZoneByte(zone, data)
+}
+
+func (g *Scanner) _writeZoneByte(zone [2]byte, data byte) error {
 	err := g.write(&command{
 		Function: send,
 		Length:   1,
@@ -167,7 +191,7 @@ func (g *Scanner) writeZoneByte(zone [2]byte, data byte) error {
 		Data:     data,
 		CRC:      [2]byte{},
 	})
-	buf, err := g.Read()
+	buf, err := g._read()
 	if err != nil {
 		return err
 	}

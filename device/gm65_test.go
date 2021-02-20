@@ -29,11 +29,14 @@ func TestWriteZoneBit(t *testing.T) {
 	var data byte
 	var set byte = 0x30
 	var clear byte = 0x00
-	err := scanner.writeZoneBit([2]byte{0x0, 0}, set, clear)
-	if assert.NoError(t, err) {
-		data, err = scanner.readZone([2]byte{0x0, 0})
-		//fmt.Printf("\n%b %d\n", data, data)
-		assert.Equal(t, set, (data&set)&^clear)
+	var noScanner = Scanner{}
+	err := noScanner.writeZoneBit([2]byte{0x0, 0}, set, clear)
+	if assert.Error(t, err) {
+		err := scanner.writeZoneBit([2]byte{0x0, 0}, set, clear)
+		if assert.NoError(t, err) {
+			data, err = scanner._readZone([2]byte{0x0, 0})
+			assert.Equal(t, set, (data&set)&^clear)
+		}
 	}
 }
 

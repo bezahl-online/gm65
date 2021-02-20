@@ -37,26 +37,26 @@ func (g *Scanner) AimStd() error {
 
 // ProductModel return product model id
 func (g *Scanner) ProductModel() (byte, error) {
-	return g.readZone([2]byte{0, 0xe0})
+	return g._readZone([2]byte{0, 0xe0})
 }
 
 // HardwareVersion return hardware version
 func (g *Scanner) HardwareVersion() (byte, error) {
-	return g.readZone([2]byte{0, 0xe1})
+	return g._readZone([2]byte{0, 0xe1})
 }
 
 // SoftwareVersion return hardware version
 func (g *Scanner) SoftwareVersion() (byte, error) {
-	return g.readZone([2]byte{0, 0xe2})
+	return g._readZone([2]byte{0, 0xe2})
 }
 
 // SoftwareDate return software date
 func (g *Scanner) SoftwareDate() (string, error) {
-	year, err := g.readZone([2]byte{0, 0xe3})
+	year, err := g._readZone([2]byte{0, 0xe3})
 	if err == nil {
-		month, err := g.readZone([2]byte{0, 0xe4})
+		month, err := g._readZone([2]byte{0, 0xe4})
 		if err == nil {
-			day, err := g.readZone([2]byte{0, 0xe5})
+			day, err := g._readZone([2]byte{0, 0xe5})
 			if err == nil {
 				return fmt.Sprintf("%4d%02d%02d", int(year)+2000, month, day), nil
 			}
