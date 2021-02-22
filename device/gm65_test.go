@@ -3,6 +3,8 @@ package device
 import (
 	"fmt"
 	"log"
+	"os"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,11 +14,16 @@ var scanner Scanner
 
 func init() {
 	fmt.Println("test init")
+	var serialPortName string = "/dev/ttyACM0"
+	if len(os.Getenv("GM65_PORT_NAME")) > 3 {
+		serialPortName = os.Getenv("GM65_PORT_NAME")
+	}
 	scanner = Scanner{
-		Config: Config{
-			SerialPort: "/dev/ttyACM0",
-			Baud:       9600,
-		},
+		lock:      &sync.RWMutex{},
+		Config:    Config{SerialPort: serialPortName, Baud: 9600},
+		port:      nil,
+		connected: false,
+		command:   &command{},
 	}
 
 	err := scanner.Open()
@@ -25,7 +32,6 @@ func init() {
 	}
 }
 func TestWriteZoneBit(t *testing.T) {
-
 	var data byte
 	var set byte = 0x30
 	var clear byte = 0x00

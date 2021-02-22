@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/snksoft/crc"
-	"github.com/tarm/serial"
+
+	"go.bug.st/serial"
 )
 
+const DEFAULTREADTIMEOUT = time.Second
 const read byte = 0x07
 const send byte = 0x08
 const save byte = 0x09
@@ -42,23 +44,60 @@ func (c command) getBytes() []byte {
 // Config is the GM65 config structure
 type Config struct {
 	SerialPort string
-	Baud       int
+	Baud       uint
 }
 
 // Scanner is the class
 type Scanner struct {
-	lock    sync.RWMutex
-	Config  Config
-	port    *serial.Port
-	command *command
+	lock      *sync.RWMutex
+	Config    Config
+	port      *serial.Port
+	connected bool
+	command   *command
 }
+
+// // Open comm port to gm65
+// func (g *Scanner) Open() error {
+// 	c := &serial.Config{
+// 		Name:        g.Config.SerialPort,
+// 		Baud:        g.Config.Baud,
+// 		ReadTimeout: DEFAULTREADTIMEOUT,
+// 	}
+// 	var err error
+// 	g.port, err = serial.OpenPort(c)
+// 	return err
+// }
+
+// // Open comm port to gm65
+// func (g *Scanner) Open() error {
+// 	// Set up options.
+// 	options := serial.OpenOptions{
+// 		PortName:        g.Config.SerialPort,
+// 		BaudRate:        g.Config.Baud,
+// 		DataBits:        8,
+// 		StopBits:        1,
+// 		MinimumReadSize: 8,
+// 		// InterCharacterTimeout: uint(DEFAULTREADTIMEOUT.Milliseconds()),
+// 	}
+// 	var err error
+// 	g.port, err = serial.Open(options)
+// 	return err
+// }
 
 // Open comm port to gm65
 func (g *Scanner) Open() error {
-	c := &serial.Config{Name: g.Config.SerialPort, Baud: g.Config.Baud}
+	mode := &serial.Mode{
+		BaudRate: int(g.Config.Baud),
+		Parity:   serial.NoParity,
+		DataBits: 8,
+		StopBits: serial.OneStopBit,
+	}
 	var err error
-	g.port, err = serial.OpenPort(c)
+	port, err := serial.Open(g.Config.SerialPort, mode)
+	g.port = &port
+	g.connected = true
 	return err
+
 }
 
 // calculate crc and append to command structure
@@ -78,8 +117,8 @@ func (g *Scanner) head() {
 	(*g.command).Head = head
 }
 
-func (g *Scanner) write(c *command) error {
-	if g.port == nil {
+func (g *Scanner) _write(c *command) error {
+	if !g.connected {
 		return errNotConnected
 	}
 	g.command = c
@@ -87,12 +126,8 @@ func (g *Scanner) write(c *command) error {
 	g.head()
 	// default error message
 	var err = fmt.Errorf("open serial port first")
-	//check if comm port is opened
-	if g.port != nil {
-		// write to gm65
-		_, err = g.port.Write(g.crc())
-		err = reconnectIfLost(err, g)
-	}
+	_, err = (*g.port).Write(g.crc())
+	err = reconnectIfLost(err, g)
 	return err
 }
 
@@ -108,28 +143,30 @@ func reconnectIfLost(err error, g *Scanner) error {
 
 var errNotConnected error = fmt.Errorf("scanner device not connected")
 
-// listen to gm65 on comm port with timeout
-func (g *Scanner) _readWithTimeout(timeout time.Duration) ([]byte, error) {
-	if g.port == nil {
+// listen to gm65 on comm port for timeout duration
+// timeout is set on connect
+func (g *Scanner) _read() ([]byte, error) {
+	if !g.connected {
 		return nil, errNotConnected
 	}
-	// FIXME: set timeout
 	buf := make([]byte, 128)
 	var err error
-	n, err := g.port.Read(buf)
-	err = reconnectIfLost(err, g)
+	n, err := (*g.port).Read(buf)
+	if n < 1 {
+		err = fmt.Errorf("no data from scanner")
+		err = reconnectIfLost(err, g)
+	}
 	return buf[:n], err
 }
 
 // listen to gm65 on comm port
 func (g *Scanner) Read(timeout time.Duration) ([]byte, error) {
+	if !g.connected {
+		return nil, errNotConnected
+	}
 	defer g.lock.Unlock()
 	g.lock.Lock()
-	return g._readWithTimeout(timeout)
-}
-
-func (g *Scanner) _read() ([]byte, error) {
-	return g._readWithTimeout(time.Second * 30)
+	return g._read()
 }
 
 func (g *Scanner) readZone(zone [2]byte) (byte, error) {
@@ -140,7 +177,7 @@ func (g *Scanner) readZone(zone [2]byte) (byte, error) {
 
 // _readZone reads the data in the given zone
 func (g *Scanner) _readZone(zone [2]byte) (byte, error) {
-	err := g.write(&command{
+	err := g._write(&command{
 		Function: read,
 		Length:   1,
 		Address:  zone,
@@ -158,6 +195,9 @@ func (g *Scanner) _readZone(zone [2]byte) (byte, error) {
 // writeZoneBit writes single bits into given
 // zone via logical OR and leaves other bits intact
 func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
+	if !g.connected {
+		return errNotConnected
+	}
 	defer g.lock.Unlock()
 	g.lock.Lock()
 	return g._writeZoneBit(zone, set, clear)
@@ -184,7 +224,7 @@ func (g *Scanner) writeZoneByte(zone [2]byte, data byte) error {
 }
 
 func (g *Scanner) _writeZoneByte(zone [2]byte, data byte) error {
-	err := g.write(&command{
+	err := g._write(&command{
 		Function: send,
 		Length:   1,
 		Address:  zone,

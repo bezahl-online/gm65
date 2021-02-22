@@ -5,26 +5,28 @@ import (
 	"os"
 	"sync"
 	"time"
-
-	"github.com/tarm/serial"
 )
 
 var connecting bool = false
 
 // Connect manages the connection of the scanner
-func Connect(s *Scanner)  {
+func Connect(s *Scanner) {
 	if connecting {
 		return
 	}
-	connecting=true
+	connecting = true
 	var serialPortName string = "/dev/ttyACM0"
-	if len(os.Getenv("GM65_PORT_NAME"))>3 {
-		serialPortName=os.Getenv("GM65_PORT_NAME")
+	if len(os.Getenv("GM65_PORT_NAME")) > 3 {
+		serialPortName = os.Getenv("GM65_PORT_NAME")
+	}
+	var mutex *sync.RWMutex = (*s).lock
+	if mutex == nil {
+		mutex = &sync.RWMutex{}
 	}
 	*s = Scanner{
-		lock:    sync.RWMutex{},
-		Config:  Config{SerialPort: serialPortName, Baud: 9600},
-		port:    &serial.Port{},
+		lock:   mutex,
+		Config: Config{SerialPort: serialPortName, Baud: 9600},
+		port:   nil,
 		command: &command{
 			Head:     [2]byte{},
 			Function: 0,
@@ -33,18 +35,21 @@ func Connect(s *Scanner)  {
 			Data:     0,
 			CRC:      [2]byte{},
 		},
+		connected: false,
 	}
 	var pause delay = delay{
 		dur: 1 * time.Second,
 	}
 
-	(*s).port.Close()
-	
+	if s.connected {
+		(*s.port).Close()
+	}
+
 	// connect to gm65 scanner on /dev/ttyACM0
 	var err error = fmt.Errorf("gm65 not connected")
-	fmt.Printf("connecting to scanner device on '%s'\n",serialPortName)
+	fmt.Printf("connecting to scanner device on '%s'\n", serialPortName)
 	for err != nil {
-		err := (*s).Open()
+		err := s.Open()
 		if err != nil {
 			fmt.Printf("\n*** Error while connection to gm65 scanner:"+
 				" %s\nRetrying after %d seconds\n", err.Error(), pause.getSeconds())
@@ -54,10 +59,11 @@ func Connect(s *Scanner)  {
 			pause.wait()
 		} else {
 			fmt.Println("device successfully connected")
+			s.connected = true
 			break
 		}
 	}
-	connecting=false
+	connecting = false
 }
 
 type delay struct {

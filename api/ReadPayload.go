@@ -12,8 +12,9 @@ import (
 func (a *API) ReadPayload(ctx echo.Context) error {
 	fmt.Println("Read")
 	payload, err := scanner.Read(time.Second)
-	if err != nil {
-		return SendError(ctx, http.StatusBadRequest, err.Error())
+
+	if err != nil || (payload != nil && len(payload) < 1) {
+		return SendError(ctx, http.StatusNotFound, err.Error())
 	}
 	var read Read = Read{
 		Payload: new(string),
