@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -10,7 +11,7 @@ import (
 // ReadPayload reads the payload that the scanner read
 func (a *API) ReadPayload(ctx echo.Context) error {
 	fmt.Println("Read")
-	payload, err := scanner.Read()
+	payload, err := scanner.Read(time.Second)
 	if err != nil {
 		return SendError(ctx, http.StatusBadRequest, err.Error())
 	}

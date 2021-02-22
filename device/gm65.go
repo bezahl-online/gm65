@@ -122,14 +122,14 @@ func (g *Scanner) _readWithTimeout(timeout time.Duration) ([]byte, error) {
 }
 
 // listen to gm65 on comm port
-func (g *Scanner) Read() ([]byte, error) {
+func (g *Scanner) Read(timeout time.Duration) ([]byte, error) {
 	defer g.lock.Unlock()
 	g.lock.Lock()
-	return g._read()
+	return g._readWithTimeout(timeout)
 }
 
 func (g *Scanner) _read() ([]byte, error) {
-	return g._readWithTimeout(0)
+	return g._readWithTimeout(time.Second * 30)
 }
 
 func (g *Scanner) readZone(zone [2]byte) (byte, error) {
