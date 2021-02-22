@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -46,14 +47,14 @@ func TestWriteZoneBit(t *testing.T) {
 	}
 }
 
-// func TestReadCode(t *testing.T) {
-// 	var code []byte
-// 	var err error
-// 	scanner.DisableAllBarcode()
-// 	scanner.EnableQRCode()
-// 	scanner.EnableEAN13()
-// 	code,err = scanner.read()
-// 	if err==nil {
-// 		fmt.Println("code: "+string(code))
-// 	}
-// }
+func TestReadCode(t *testing.T) {
+	var code []byte
+	var err error
+	// scanner.DisableAllBarcode()
+	// scanner.EnableQRCode()
+	// scanner.EnableEAN13()
+	code, err = scanner.ReadTimeout(time.Microsecond * 100)
+	if err == nil {
+		fmt.Println("code: " + string(code))
+	}
+}

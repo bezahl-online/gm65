@@ -24,7 +24,6 @@ func init() {
 	go device.Connect(&scanner)
 }
 
-
 // GetTest returns status ok
 func (a *API) GetTest(ctx echo.Context) error {
 	var err error

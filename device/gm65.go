@@ -11,7 +11,6 @@ import (
 	"go.bug.st/serial"
 )
 
-const DEFAULTREADTIMEOUT = time.Second
 const read byte = 0x07
 const send byte = 0x08
 const save byte = 0x09
@@ -127,12 +126,15 @@ func (g *Scanner) _write(c *command) error {
 	// default error message
 	var err = fmt.Errorf("open serial port first")
 	_, err = (*g.port).Write(g.crc())
-	err = reconnectIfLost(err, g)
-	return err
+	if err != nil {
+		return err
+	}
+	return g.reconnectIfLost()
 }
 
-func reconnectIfLost(err error, g *Scanner) error {
-	if err != nil {
+func (g *Scanner) reconnectIfLost() error {
+	var err error
+	if !g.connected {
 		go Connect(g)
 		if err.Error() == "EOF" {
 			err = fmt.Errorf("lost connection to scanner device")
@@ -143,30 +145,37 @@ func reconnectIfLost(err error, g *Scanner) error {
 
 var errNotConnected error = fmt.Errorf("scanner device not connected")
 
-// listen to gm65 on comm port for timeout duration
-// timeout is set on connect
 func (g *Scanner) _read() ([]byte, error) {
+	return g._readWithTimeOut(-1)
+}
+
+// listen to gm65 on comm port for timeout duration
+func (g *Scanner) _readWithTimeOut(timeOut time.Duration) ([]byte, error) {
 	if !g.connected {
 		return nil, errNotConnected
 	}
 	buf := make([]byte, 128)
 	var err error
-	n, err := (*g.port).Read(buf)
-	if n < 1 {
-		err = fmt.Errorf("no data from scanner")
-		err = reconnectIfLost(err, g)
+	n, err := (*g.port).ReadTimeOut(buf, timeOut)
+	if err != nil {
+		return nil, err
 	}
-	return buf[:n], err
+	return buf[:n], g.reconnectIfLost()
 }
 
 // listen to gm65 on comm port
-func (g *Scanner) Read(timeout time.Duration) ([]byte, error) {
+func (g *Scanner) Read() ([]byte, error) {
+	return g.ReadTimeout(-1)
+}
+
+// ReadTimeout listens to gm65 on comm port with timeout
+func (g *Scanner) ReadTimeout(timeout time.Duration) ([]byte, error) {
 	if !g.connected {
 		return nil, errNotConnected
 	}
 	defer g.lock.Unlock()
 	g.lock.Lock()
-	return g._read()
+	return g._readWithTimeOut(timeout)
 }
 
 func (g *Scanner) readZone(zone [2]byte) (byte, error) {
