@@ -6,7 +6,6 @@ import (
 	"os"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -25,6 +24,11 @@ func init() {
 		port:      nil,
 		connected: false,
 		command:   &command{},
+		listening: false,
+		latestCode: Barcode{
+			RWMutex: sync.RWMutex{},
+			Value:   "",
+		},
 	}
 
 	err := scanner.Open()
@@ -53,7 +57,7 @@ func TestReadCode(t *testing.T) {
 	// scanner.DisableAllBarcode()
 	// scanner.EnableQRCode()
 	// scanner.EnableEAN13()
-	code, err = scanner.ReadTimeout(time.Microsecond * 100)
+	code, err = scanner.Read()
 	if err == nil {
 		fmt.Println("code: " + string(code))
 	}

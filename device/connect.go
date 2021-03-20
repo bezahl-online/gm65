@@ -60,6 +60,8 @@ func Connect(s *Scanner) {
 		} else {
 			fmt.Println("device successfully connected")
 			s.connected = true
+			s.Configure()
+			go s.Listen()
 			break
 		}
 	}

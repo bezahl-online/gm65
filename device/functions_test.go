@@ -116,9 +116,9 @@ func TestAimStd(t *testing.T) {
 }
 
 func TestReadInterval(t *testing.T) {
-	var zone [2]byte = [2]byte{0x00, 0x04}
+	var zone [2]byte = [2]byte{0x00, 0x05}
 	var interval byte = 15
-	err := scanner.ReadInterval(interval)
+	err := scanner.ReadIntervalTime(interval)
 	if assert.NoError(t, err) {
 		data, err := scanner.readZone(zone)
 		if assert.NoError(t, err) {

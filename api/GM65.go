@@ -26,9 +26,7 @@ func init() {
 
 // GetTest returns status ok
 func (a *API) GetTest(ctx echo.Context) error {
-	var err error
-	err = SendStatus(ctx, http.StatusOK, "OK")
-	if err != nil {
+	if err := SendStatus(ctx, http.StatusOK, "OK"); err != nil {
 		return err
 	}
 	return nil

@@ -46,42 +46,21 @@ type Config struct {
 	Baud       uint
 }
 
-// Scanner is the class
-type Scanner struct {
-	lock      *sync.RWMutex
-	Config    Config
-	port      *serial.Port
-	connected bool
-	command   *command
+type Barcode struct {
+	sync.RWMutex
+	Value string
 }
 
-// // Open comm port to gm65
-// func (g *Scanner) Open() error {
-// 	c := &serial.Config{
-// 		Name:        g.Config.SerialPort,
-// 		Baud:        g.Config.Baud,
-// 		ReadTimeout: DEFAULTREADTIMEOUT,
-// 	}
-// 	var err error
-// 	g.port, err = serial.OpenPort(c)
-// 	return err
-// }
-
-// // Open comm port to gm65
-// func (g *Scanner) Open() error {
-// 	// Set up options.
-// 	options := serial.OpenOptions{
-// 		PortName:        g.Config.SerialPort,
-// 		BaudRate:        g.Config.Baud,
-// 		DataBits:        8,
-// 		StopBits:        1,
-// 		MinimumReadSize: 8,
-// 		// InterCharacterTimeout: uint(DEFAULTREADTIMEOUT.Milliseconds()),
-// 	}
-// 	var err error
-// 	g.port, err = serial.Open(options)
-// 	return err
-// }
+// Scanner is the class
+type Scanner struct {
+	lock       *sync.RWMutex
+	Config     Config
+	port       *serial.Port
+	connected  bool
+	command    *command
+	listening  bool
+	latestCode Barcode
+}
 
 // Open comm port to gm65
 func (g *Scanner) Open() error {
@@ -97,6 +76,36 @@ func (g *Scanner) Open() error {
 	g.connected = true
 	return err
 
+}
+
+func (g *Scanner) Listen() {
+	if g.listening {
+		return
+	}
+	g.listening = true
+	for {
+		if !g.connected {
+			g.listening = false
+			break
+		}
+		result, err := g.Read()
+		if err == nil {
+			g.latestCode.Lock()
+			g.latestCode.Value = string(result)
+			g.latestCode.Unlock()
+		} else {
+			g.listening = false
+			break
+		}
+	}
+}
+
+func (g *Scanner) GetLatest() string {
+	g.latestCode.RLock()
+	defer g.latestCode.RUnlock()
+	code := g.latestCode.Value
+	g.latestCode.Value = ""
+	return code
 }
 
 // calculate crc and append to command structure
@@ -117,65 +126,54 @@ func (g *Scanner) head() {
 }
 
 func (g *Scanner) _write(c *command) error {
-	if !g.connected {
-		return errNotConnected
+	if err := g.reconnectIfLost(); err != nil {
+		return err
 	}
 	g.command = c
 	// add header bytes
 	g.head()
 	// default error message
-	var err = fmt.Errorf("open serial port first")
-	_, err = (*g.port).Write(g.crc())
+	_, err := (*g.port).Write(g.crc())
 	if err != nil {
 		return err
 	}
-	return g.reconnectIfLost()
+	return nil
 }
 
 func (g *Scanner) reconnectIfLost() error {
-	var err error
 	if !g.connected {
 		go Connect(g)
-		if err.Error() == "EOF" {
-			err = fmt.Errorf("lost connection to scanner device")
+		time.Sleep(100 * time.Millisecond)
+		if g.connected {
+			// seems to be connected again
+			return nil
 		}
+		return fmt.Errorf("lost connection to scanner device")
 	}
-	return err
+	return nil
 }
 
 var errNotConnected error = fmt.Errorf("scanner device not connected")
 
+// listen to gm65 on comm port
 func (g *Scanner) _read() ([]byte, error) {
-	return g._readWithTimeOut(-1)
-}
-
-// listen to gm65 on comm port for timeout duration
-func (g *Scanner) _readWithTimeOut(timeOut time.Duration) ([]byte, error) {
-	if !g.connected {
-		return nil, errNotConnected
+	if err := g.reconnectIfLost(); err != nil {
+		return nil, err
 	}
 	buf := make([]byte, 128)
 	var err error
-	n, err := (*g.port).ReadTimeOut(buf, timeOut)
+	n, err := (*g.port).Read(buf)
 	if err != nil {
 		return nil, err
 	}
-	return buf[:n], g.reconnectIfLost()
+	return buf[:n], nil
 }
 
-// listen to gm65 on comm port
+// ReadTimeout listens to gm65 on comm port
 func (g *Scanner) Read() ([]byte, error) {
-	return g.ReadTimeout(-1)
-}
-
-// ReadTimeout listens to gm65 on comm port with timeout
-func (g *Scanner) ReadTimeout(timeout time.Duration) ([]byte, error) {
-	if !g.connected {
-		return nil, errNotConnected
-	}
 	defer g.lock.Unlock()
 	g.lock.Lock()
-	return g._readWithTimeOut(timeout)
+	return g._read()
 }
 
 func (g *Scanner) readZone(zone [2]byte) (byte, error) {
@@ -204,9 +202,6 @@ func (g *Scanner) _readZone(zone [2]byte) (byte, error) {
 // writeZoneBit writes single bits into given
 // zone via logical OR and leaves other bits intact
 func (g *Scanner) writeZoneBit(zone [2]byte, set byte, clear byte) error {
-	if !g.connected {
-		return errNotConnected
-	}
 	defer g.lock.Unlock()
 	g.lock.Lock()
 	return g._writeZoneBit(zone, set, clear)

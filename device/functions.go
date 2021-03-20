@@ -66,7 +66,7 @@ func (g *Scanner) SoftwareDate() (string, error) {
 }
 
 // ReadInterval sets the read interval
-func (g *Scanner) ReadInterval(interval byte) error {
+func (g *Scanner) ImageStabilisationTimeout(interval byte) error {
 	return g.writeZoneByte([2]byte{0, 0x04}, interval)
 }
 
@@ -102,11 +102,15 @@ func (g *Scanner) AutoSleep(on bool, timeMills uint16) error {
 	return g.writeZoneByte([2]byte{0, 0x07}, b[0])
 }
 
-// SingleReadTime sets the time for a single read
-// The longest time before first successful reading.
-// After this time, module will be into no read time.
+// SingleReadTime timeout for a single read attempt
 func (g *Scanner) SingleReadTime(readTime byte) error {
 	return g.writeZoneByte([2]byte{0, 0x06}, readTime)
+}
+
+// ReadIntervalTime set time interval of consecutive
+// reading attemps
+func (g *Scanner) ReadIntervalTime(readTime byte) error {
+	return g.writeZoneByte([2]byte{0, 0x05}, readTime)
 }
 
 // SensorMode set scanner to sensor mode
@@ -161,6 +165,17 @@ func (g *Scanner) RotateRead360(on bool) error {
 	return g.writeZoneBit([2]byte{0, 0x2c}, set, clear)
 }
 
+// ReadSuccessFullSound set if scanner should peep
+func (g *Scanner) ReadSuccessFullSound(on bool) error {
+	var set byte = 0x04
+	var clear byte = 0
+	if !on {
+		clear = set
+		set = 0
+	}
+	return g.writeZoneBit([2]byte{0, 0x0e}, set, clear)
+}
+
 // DisableAllBarcode disable any barcodes
 func (g *Scanner) DisableAllBarcode() error {
 	return g.writeZoneBit([2]byte{0, 0x2c}, 0x00, 0x06)
@@ -184,4 +199,14 @@ func (g *Scanner) EnableCode39() error {
 // EnableQRCode allow scanner to read QR codes
 func (g *Scanner) EnableQRCode() error {
 	return g.writeZoneBit([2]byte{0, 0x3f}, 0x01, 0x00)
+}
+
+func (g *Scanner) Configure() {
+	fmt.Println("configure")
+	g.DisableAllBarcode()
+	g.EnableEAN13()
+	g.LightOn()
+	g.AimOn()
+	g.ReadIntervalTime(1)
+	g.ReadSuccessFullSound(false)
 }
