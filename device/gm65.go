@@ -78,6 +78,7 @@ func (g *Scanner) Open() error {
 
 }
 
+// TODO: listen to multiple scanner
 func (g *Scanner) Listen() {
 	if g.listening {
 		return
@@ -99,7 +100,11 @@ func (g *Scanner) Listen() {
 		}
 	}
 }
-
+func (g *Scanner) SetCode(code string) {
+	g.latestCode.Lock()
+	defer g.latestCode.Unlock()
+	g.latestCode.Value = code
+}
 func (g *Scanner) GetLatest() string {
 	g.latestCode.RLock()
 	defer g.latestCode.RUnlock()
