@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/term"
 	"github.com/snksoft/crc"
-
-	"go.bug.st/serial"
 )
 
 const read byte = 0x07
@@ -55,7 +54,7 @@ type Barcode struct {
 type Scanner struct {
 	lock       *sync.RWMutex
 	Config     Config
-	port       *serial.Port
+	port       *term.Term
 	connected  bool
 	command    *command
 	listening  bool
@@ -64,15 +63,10 @@ type Scanner struct {
 
 // Open comm port to gm65
 func (g *Scanner) Open() error {
-	mode := &serial.Mode{
-		BaudRate: int(g.Config.Baud),
-		Parity:   serial.NoParity,
-		DataBits: 8,
-		StopBits: serial.OneStopBit,
-	}
 	var err error
-	port, err := serial.Open(g.Config.SerialPort, mode)
-	g.port = &port
+	port, err := term.Open(g.Config.SerialPort)
+	port.SetRaw()
+	g.port = port
 	g.connected = true
 	return err
 
