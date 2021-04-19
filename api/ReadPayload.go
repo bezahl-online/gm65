@@ -13,6 +13,7 @@ const DEFAULTREADTIMEOUT = time.Second
 // ReadPayload reads the payload that the scanner read
 func (a *API) ReadPayload(ctx echo.Context) error {
 	// fmt.Println("Read") // FIXME: Logger!
+
 	var read Read = Read{
 		Payload: new(string),
 	}

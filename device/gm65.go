@@ -70,8 +70,8 @@ func (g *Scanner) Open() error {
 		g.port = port
 		g.connected = true
 	}
-	return err
 
+	return err
 }
 
 // TODO: listen to multiple scanner

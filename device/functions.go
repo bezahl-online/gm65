@@ -211,6 +211,7 @@ func (g *Scanner) Configure() {
 	time.Sleep(30 * time.Millisecond)
 	g.AimOff()
 	time.Sleep(30 * time.Millisecond)
+
 	fmt.Println("configure")
 	g.DisableAllBarcode()
 	g.EnableEAN13()
