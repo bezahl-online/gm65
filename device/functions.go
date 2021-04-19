@@ -3,6 +3,7 @@ package device
 import (
 	"encoding/binary"
 	"fmt"
+	"time"
 )
 
 // LightOn sets the aim (red light) to ON
@@ -202,6 +203,14 @@ func (g *Scanner) EnableQRCode() error {
 }
 
 func (g *Scanner) Configure() {
+	g.LightOff()
+	time.Sleep(10 * time.Millisecond)
+	g.AimOff()
+	time.Sleep(30 * time.Millisecond)
+	g.AimOn()
+	time.Sleep(30 * time.Millisecond)
+	g.AimOff()
+	time.Sleep(30 * time.Millisecond)
 	fmt.Println("configure")
 	g.DisableAllBarcode()
 	g.EnableEAN13()
