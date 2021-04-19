@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"sync"
 
 	"bezahl.online/gm65/device"
 	"github.com/labstack/echo/v4"
@@ -15,13 +16,15 @@ import (
 type API struct{}
 
 var e *echo.Echo = echo.New()
-var scanner device.Scanner
+var scanner device.Scanner = device.Scanner{
+	RWMutex: sync.RWMutex{},
+}
 
 func init() {
 	fmt.Println("init")
 	testServer := &API{}
 	RegisterHandlers(e, testServer)
-	go device.Connect(&scanner)
+	go scanner.Connect()
 }
 
 // GetTest returns status ok

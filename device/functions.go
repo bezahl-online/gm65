@@ -203,6 +203,8 @@ func (g *Scanner) EnableQRCode() error {
 }
 
 func (g *Scanner) Configure() {
+	time.Sleep(10 * time.Millisecond)
+	g.DisableAllBarcode()
 	g.LightOff()
 	time.Sleep(10 * time.Millisecond)
 	g.AimOff()
@@ -213,10 +215,11 @@ func (g *Scanner) Configure() {
 	time.Sleep(30 * time.Millisecond)
 
 	fmt.Println("configure")
-	g.DisableAllBarcode()
+	g.EnableEAN13()
 	g.EnableEAN13()
 	g.LightOn()
 	g.AimOn()
 	g.ReadIntervalTime(1)
 	g.ReadSuccessFullSound(false)
+	// g.Listen()
 }
