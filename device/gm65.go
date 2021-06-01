@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/pkg/term"
@@ -86,7 +87,8 @@ func (g *Scanner) Listen() {
 		}
 		result, err := g.Read()
 		if err == nil {
-			g.SetCode(string(result))
+			code := strings.TrimSuffix(string(result), "\r")
+			g.SetCode(code)
 		} else {
 			break
 		}
