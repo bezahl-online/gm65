@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"bezahl.online/gm65/param"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,7 +15,8 @@ const DEFAULTREADTIMEOUT = time.Second
 // TODO: debug messages with debug flag
 // ReadPayload reads the payload that the scanner read
 func (a *API) ReadPayload(ctx echo.Context) error {
-	if !scanner.IsConnected() {
+	x := *param.Disconnected
+	if !scanner.IsConnected() && !x {
 		return SendError(ctx, http.StatusNotFound,
 			fmt.Sprint(("lost connection to scanner device")))
 	}

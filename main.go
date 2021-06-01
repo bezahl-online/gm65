@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"bezahl.online/gm65/api"
+	"bezahl.online/gm65/param"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -17,7 +18,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
 		os.Exit(1)
 	}
-
+	if *param.Disconnected {
+		fmt.Println("test mode - not reporting missing physical device")
+	}
 	serverPort, err := strconv.Atoi(strings.Split(swagger.Servers[0].URL, ":")[2])
 	port := &serverPort
 	e := echo.New()

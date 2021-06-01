@@ -2,7 +2,6 @@ package device
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sync"
 	"testing"
@@ -19,22 +18,19 @@ func init() {
 		serialPortName = os.Getenv("GM65_PORT_NAME")
 	}
 	scanner = Scanner{
-		lock:      &sync.RWMutex{},
-		Config:    Config{SerialPort: serialPortName, Baud: 9600},
-		port:      nil,
-		connected: false,
-		command:   &command{},
-		listening: false,
-		latestCode: Barcode{
-			RWMutex: sync.RWMutex{},
-			Value:   "",
-		},
+		RWMutex:    sync.RWMutex{},
+		Config:     Config{SerialPort: serialPortName, Baud: 9600},
+		port:       nil,
+		connected:  false,
+		command:    &command{},
+		listening:  false,
+		latestCode: Barcode{RWMutex: sync.RWMutex{}, Value: ""},
 	}
 
-	err := scanner.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err := scanner.Connect()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }
 func TestWriteZoneBit(t *testing.T) {
 	var data byte
