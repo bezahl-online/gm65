@@ -20,6 +20,8 @@ WORKDIR /gm65
 # need to build like this:
 # $ CGO_ENABLED=0 go build -o gm65server
 ADD gm65server .
+ADD localhost.crt .
+ADD localhost.key .
 
 # Build the application
 #RUN go build -o server .
