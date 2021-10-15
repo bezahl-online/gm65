@@ -11,7 +11,7 @@ services:
   gm65server:
     build: .
     restart: always
-    image: "bezahlonline/gm65server"
+    image: "www.greisslomat.at:5000/gm65server"
     ports:
       - "8070:8070"
     volumes:
