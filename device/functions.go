@@ -8,6 +8,7 @@ import (
 
 // LightOn sets the aim (red light) to ON
 func (g *Scanner) LightOn() error {
+	fmt.Printf("Light on")
 	return g.writeZoneBit([2]byte{0, 0}, 0x08, 0x04)
 }
 
@@ -23,6 +24,7 @@ func (g *Scanner) LightStd() error {
 
 // AimOn sets the aim (red light) to ON
 func (g *Scanner) AimOn() error {
+	fmt.Printf("Aim on")
 	return g.writeZoneBit([2]byte{0, 0}, 0x20, 0x10)
 }
 
@@ -184,11 +186,13 @@ func (g *Scanner) DisableAllBarcode() error {
 
 // EnableEAN13 allow scanner to read EAN13
 func (g *Scanner) EnableEAN13() error {
+	fmt.Printf("enable EAN13")
 	return g.writeZoneBit([2]byte{0, 0x2e}, 0x01, 0x00)
 }
 
 // EnableEAN8 allow scanner to read EAN8
 func (g *Scanner) EnableEAN8() error {
+	fmt.Printf("enable EAN8")
 	return g.writeZoneBit([2]byte{0, 0x2f}, 0x01, 0x00)
 }
 
@@ -199,6 +203,7 @@ func (g *Scanner) EnableCode39() error {
 
 // EnableQRCode allow scanner to read QR codes
 func (g *Scanner) EnableQRCode() error {
+	fmt.Printf("enable QR Code")
 	return g.writeZoneBit([2]byte{0, 0x3f}, 0x01, 0x00)
 }
 
@@ -217,6 +222,7 @@ func (g *Scanner) Configure() {
 	fmt.Println("configure")
 	g.EnableEAN13()
 	g.EnableEAN13()
+	g.EnableEAN8()
 	g.EnableEAN8()
 	g.EnableQRCode()
 	g.LightOn()
