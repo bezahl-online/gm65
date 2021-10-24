@@ -217,6 +217,7 @@ func (g *Scanner) Configure() {
 	fmt.Println("configure")
 	g.EnableEAN13()
 	g.EnableEAN13()
+	g.EnableEAN8()
 	g.EnableQRCode()
 	g.LightOn()
 	g.AimOn()
