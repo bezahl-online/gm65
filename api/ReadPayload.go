@@ -23,6 +23,9 @@ func (a *API) ReadPayload(ctx echo.Context) error {
 	var read Read = Read{
 		Payload: new(string),
 	}
+	// FIXME: is called way to offen
+	// need a short timeout and should
+	// be implemented using pipes
 	*read.Payload = scanner.GetCode()
 	scanner.ClearCode()
 	if len(*read.Payload) > 0 {
