@@ -10,13 +10,13 @@ import (
 )
 
 func TestLight(t *testing.T) {
-	var lightSwitch SwitchOpt = SwitchOpt_std
+	var lightSwitch SwitchOpt = SwitchOptStd
 	var request LightJSONRequestBody = LightJSONRequestBody{
 		Set: &lightSwitch,
 	}
 	result := testutil.NewRequest().Post("/light").WithJsonBody(request).WithAcceptJson().Go(t, e)
-	for result.Code()==http.StatusGone {
-		time.Sleep(100*time.Millisecond)
+	for result.Code() == http.StatusGone {
+		time.Sleep(100 * time.Millisecond)
 		result = testutil.NewRequest().Post("/light").WithJsonBody(request).WithAcceptJson().Go(t, e)
 	}
 	assert.Equal(t, http.StatusOK, result.Code())

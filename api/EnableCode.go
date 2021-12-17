@@ -15,18 +15,21 @@ func (a *API) EnableCode(ctx echo.Context) error {
 	if err != nil {
 		return SendError(ctx, http.StatusBadRequest, err.Error())
 	}
-	fmt.Printf("EnableCode %s\n",*request.CodeType)
+	fmt.Printf("EnableCode %s\n", *request.CodeType)
 	switch *request.CodeType {
-	case CodeType_ean13:
+	case CodeTypeEan13:
 		err = scanner.EnableEAN13()
 		break
-	case CodeType_ean8:
+	case CodeTypeEan8:
 		err = scanner.EnableEAN8()
 		break
-	case CodeType_qr:
+	case CodeTypeQr:
 		err = scanner.EnableQRCode()
 		break
-	// case CodeType_all:
+	case CodeTypeUpca:
+		err = scanner.EnableUPCa()
+		break
+	// case CodeTypeAll:
 	// 	err = scanner.EnableAll()
 	// 	break
 	default:
@@ -35,7 +38,7 @@ func (a *API) EnableCode(ctx echo.Context) error {
 			return SendError(ctx, http.StatusBadRequest, err.Error())
 		}
 	}
-	if err!=nil {
+	if err != nil {
 		return SendError(ctx, http.StatusGone, err.Error())
 	}
 	return nil

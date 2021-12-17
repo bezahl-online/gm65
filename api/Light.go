@@ -16,13 +16,13 @@ func (a *API) Light(ctx echo.Context) error {
 		return SendError(ctx, http.StatusBadRequest, err.Error())
 	}
 	switch *request.Set {
-	case SwitchOpt_enable:
+	case SwitchOptEnable:
 		err = scanner.LightOn()
 		break
-	case SwitchOpt_disable:
+	case SwitchOptDisable:
 		err = scanner.LightOff()
 		break
-	case SwitchOpt_std:
+	case SwitchOptStd:
 		err = scanner.LightStd()
 		break
 	default:
@@ -31,7 +31,7 @@ func (a *API) Light(ctx echo.Context) error {
 			return SendError(ctx, http.StatusBadRequest, err.Error())
 		}
 	}
-	if err!=nil {
+	if err != nil {
 		return SendError(ctx, http.StatusGone, err.Error())
 	}
 	return nil

@@ -196,6 +196,12 @@ func (g *Scanner) EnableEAN8() error {
 	return g.writeZoneBit([2]byte{0, 0x2f}, 0x01, 0x00)
 }
 
+// EnableUPCa allow scanner to read UPCa
+func (g *Scanner) EnableUPCa() error {
+	fmt.Println("enable UPCa")
+	return g.writeZoneBit([2]byte{0, 0x30}, 0x01, 0x00)
+}
+
 // EnableCode39 allow scanner to read Code39
 func (g *Scanner) EnableCode39() error {
 	return g.writeZoneBit([2]byte{0, 0x36}, 0x01, 0x00)
@@ -220,11 +226,14 @@ func (g *Scanner) Configure() {
 	time.Sleep(30 * time.Millisecond)
 
 	fmt.Println("configure")
+	g.EnableUPCa()
+	g.EnableUPCa()
 	g.EnableEAN13()
 	g.EnableEAN13()
 	g.EnableEAN8()
 	g.EnableEAN8()
 	g.EnableQRCode()
+
 	g.LightOn()
 	g.AimOn()
 	g.ReadIntervalTime(1)

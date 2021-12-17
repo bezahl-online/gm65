@@ -289,6 +289,7 @@ components:
         - ean13
         - ean8
         - qr
+        - upca
         - all
           
     switch_opt:

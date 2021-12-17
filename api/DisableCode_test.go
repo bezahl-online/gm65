@@ -10,13 +10,13 @@ import (
 )
 
 func TestDisableCode(t *testing.T) {
-	var codeType CodeType = CodeType_all
+	var codeType CodeType = CodeTypeAll
 	var request DisableCodeJSONRequestBody = DisableCodeJSONRequestBody{
 		CodeType: &codeType,
 	}
 	result := testutil.NewRequest().Post("/disable_code").WithJsonBody(request).WithAcceptJson().Go(t, e)
-	for result.Code()==http.StatusGone {
-		time.Sleep(100*time.Millisecond)
+	for result.Code() == http.StatusGone {
+		time.Sleep(100 * time.Millisecond)
 		result = testutil.NewRequest().Post("/disable_code").WithJsonBody(request).WithAcceptJson().Go(t, e)
 	}
 	assert.Equal(t, http.StatusOK, result.Code())

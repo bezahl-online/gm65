@@ -53,6 +53,7 @@ func TestReadCode(t *testing.T) {
 	// scanner.DisableAllBarcode()
 	// scanner.EnableQRCode()
 	// scanner.EnableEAN13()
+	scanner.Connect()
 	code, err = scanner.Read()
 	if err == nil {
 		fmt.Println("code: " + string(code))
