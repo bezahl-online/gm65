@@ -11,7 +11,7 @@ services:
   gm65server:
     build: .
     restart: always
-    image: "www.greisslomat.at:5000/gm65:1.0.1"
+    image: "www.greisslomat.at:5000/gm65:${GM65_VERSION}"
     ports:
       - "8070:8070"
     volumes:
