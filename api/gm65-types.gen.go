@@ -86,6 +86,12 @@ type LightJSONBody struct {
 	Set *SwitchOpt `json:"set,omitempty"`
 }
 
+// GetMockParams defines parameters for GetMock.
+type GetMockParams struct {
+	// the code to be injected
+	Code string `json:"code"`
+}
+
 // DisableCodeJSONRequestBody defines body for DisableCode for application/json ContentType.
 type DisableCodeJSONRequestBody DisableCodeJSONBody
 

@@ -28,9 +28,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/scanner_info'
+        '400':
+          $ref: '#/components/responses/statusresponse'
 
-
-
+  /mock:
+    get:
+      description: send code to mock scanner input
+      parameters:
+        - name: code
+          in: query
+          description: >-
+            the code to be injected
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/statusresponse'
         '400':
           $ref: '#/components/responses/statusresponse'
                                           
