@@ -18,13 +18,10 @@ func (a *API) Light(ctx echo.Context) error {
 	switch *request.Set {
 	case SwitchOptEnable:
 		err = scanner.LightOn()
-		break
 	case SwitchOptDisable:
 		err = scanner.LightOff()
-		break
 	case SwitchOptStd:
 		err = scanner.LightStd()
-		break
 	default:
 		err = fmt.Errorf("'%s' not implemented", *request.Set)
 		if err != nil {

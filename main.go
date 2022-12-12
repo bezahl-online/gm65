@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,9 +20,12 @@ func main() {
 		os.Exit(1)
 	}
 	if *param.Disconnected {
-		fmt.Println("test mode - not reporting missing physical device")
+		fmt.Println("***\n*** test mode - not reporting missing physical device ***\n***")
 	}
 	serverPort, err := strconv.Atoi(strings.Split(swagger.Servers[0].URL, ":")[2])
+	if err != nil {
+		log.Fatal(err)
+	}
 	port := &serverPort
 	e := echo.New()
 	e.Use(middleware.CORS())

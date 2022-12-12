@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -18,7 +17,7 @@ func (a *API) ReadPayload(ctx echo.Context) error {
 	x := *param.Disconnected
 	if !scanner.IsConnected() && !x {
 		return SendError(ctx, http.StatusNotFound,
-			fmt.Sprint(("lost connection to scanner device")))
+			"lost connection to scanner device")
 	}
 	var read Read = Read{
 		Payload: new(string),

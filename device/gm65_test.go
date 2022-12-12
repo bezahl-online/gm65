@@ -12,7 +12,6 @@ import (
 var scanner Scanner
 
 func init() {
-	fmt.Println("test init")
 	var serialPortName string = "/dev/ttyACM0"
 	if len(os.Getenv("GM65_PORT_NAME")) > 3 {
 		serialPortName = os.Getenv("GM65_PORT_NAME")
@@ -26,12 +25,8 @@ func init() {
 		listening:  false,
 		latestCode: Barcode{RWMutex: sync.RWMutex{}, Value: ""},
 	}
-
-	// err := scanner.Connect()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 }
+
 func TestWriteZoneBit(t *testing.T) {
 	var data byte
 	var set byte = 0x30
@@ -42,7 +37,9 @@ func TestWriteZoneBit(t *testing.T) {
 		err := scanner.writeZoneBit([2]byte{0x0, 0}, set, clear)
 		if assert.NoError(t, err) {
 			data, err = scanner._readZone([2]byte{0x0, 0})
-			assert.Equal(t, set, (data&set)&^clear)
+			if assert.NoError(t, err) {
+				assert.Equal(t, set, (data&set)&^clear)
+			}
 		}
 	}
 }

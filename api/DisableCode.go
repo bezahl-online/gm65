@@ -28,7 +28,6 @@ func (a *API) DisableCode(ctx echo.Context) error {
 	// 	break
 	case CodeTypeAll:
 		err = scanner.DisableAllBarcode()
-		break
 	default:
 		err = fmt.Errorf("'%s' not implemented", *request.CodeType)
 		if err != nil {

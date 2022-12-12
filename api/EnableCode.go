@@ -19,16 +19,12 @@ func (a *API) EnableCode(ctx echo.Context) error {
 	switch *request.CodeType {
 	case CodeTypeEan13:
 		err = scanner.EnableEAN13()
-		break
 	case CodeTypeEan8:
 		err = scanner.EnableEAN8()
-		break
 	case CodeTypeQr:
 		err = scanner.EnableQRCode()
-		break
 	case CodeTypeUpca:
 		err = scanner.EnableUPCa()
-		break
 	// case CodeTypeAll:
 	// 	err = scanner.EnableAll()
 	// 	break

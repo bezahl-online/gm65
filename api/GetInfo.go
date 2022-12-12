@@ -10,9 +10,21 @@ import (
 // GetInfo returns all data available about the scanner
 func (a *API) GetInfo(ctx echo.Context) error {
 	model, err := scanner.ProductModel()
+	if err != nil {
+		return err
+	}
 	softwareVersion, err := scanner.SoftwareVersion()
+	if err != nil {
+		return err
+	}
 	softwareDate, err := scanner.SoftwareDate()
+	if err != nil {
+		return err
+	}
 	hardwareVersion, err := scanner.HardwareVersion()
+	if err != nil {
+		return err
+	}
 
 	info := ScannerInfo{
 		HardwareVersion: new(string),
