@@ -1,5 +1,9 @@
+# build using 
+# nix-build -E 'let pkgs = import <nixpkgs> { }; in pkgs.callPackage ./default.nix {}'
+#
 { lib
 , buildGoModule
+, fetchFromGitHub
 , nixosTests
 , testers
 , installShellFiles
@@ -15,7 +19,13 @@ buildGoModule {
   pname = "gm65server";
   inherit version;
 
-  src = ./.;
+  src = fetchFromGitHub {
+    owner = "bezahl-online";
+    repo = repo;
+    rev = "53209f6781ac9c0e113ce7fafb58366f07002b57";
+    sha256 = "sha256-gHHLmOEy05rBL/10ck67ZgIwRO4x6YvBI5e1aQN4L/E=";
+  };
+  # src = ../gm65/.;
  
   vendorSha256 = "sha256-GoJ2XMiml03UCi7Ow09pXPbc960n+w1nmhdOAAthoR8=";
 
